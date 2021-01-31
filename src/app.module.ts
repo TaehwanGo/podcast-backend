@@ -21,11 +21,11 @@ import * as Joi from 'joi';
       ignoreEnvFile: process.env.NODE_ENV === 'production', // 서버에 deploy할때 .env파일(environment variable파일)을 사용하지 않겠다는 것
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid('dev', 'production', 'test').required(), // NODE_ENV에 test를 넣어주는 곳이 어디지?
-        DB_HOST: Joi.string().required(), // Joi.object의 key를 .env파일로 지정하고 validation조건을 입력하면 .env와 비교해서 결과를 알려주는 것 같다.
-        DB_PORT: Joi.string().required(),
-        DB_USERNAME: Joi.string().required(),
-        DB_PASSWORD: Joi.string().required(),
-        DB_NAME: Joi.string().required(),
+        DB_HOST: Joi.string(), // Joi.object의 key를 .env파일로 지정하고 validation조건을 입력하면 .env와 비교해서 결과를 알려주는 것 같다.
+        DB_PORT: Joi.string(),
+        DB_USERNAME: Joi.string(),
+        DB_PASSWORD: Joi.string(),
+        DB_NAME: Joi.string(),
         // PRIVATE_KEY: Joi.string().required(),
         // MAILGUN_API_KEY: Joi.string().required(),
         // MAILGUN_DOMAIN_NAME: Joi.string().required(),
@@ -37,11 +37,15 @@ import * as Joi from 'joi';
       // database: 'db.sqlite3',
       // synchronize: true,
       type: 'postgres',
-      host: process.env.DB_HOST,
-      port: +process.env.DB_PORT,
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
+      ...(process.env.DATABASE_URL
+        ? { url: process.env.DATABASE_URL }
+        : {
+            host: process.env.DB_HOST,
+            port: +process.env.DB_PORT,
+            username: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+          }),
       synchronize: process.env.NODE_ENV !== 'prod',
       logging:
         process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
@@ -50,7 +54,7 @@ import * as Joi from 'joi';
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       introspection: true,
-      playground: true,
+      playground: true, // process.env.NODE_ENV !== 'production'
       context: ({ req }) => {
         return { user: req['user'] };
       },
