@@ -2,6 +2,7 @@ import { Module, RequestMethod, MiddlewareConsumer } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { PodcastsModule } from './podcast/podcasts.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { Podcast } from './podcast/entities/podcast.entity';
 import { Episode } from './podcast/entities/episode.entity';
 import { Review } from './podcast/entities/review.entity';
@@ -10,14 +11,40 @@ import { UsersModule } from './users/users.module';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
+import * as Joi from 'joi';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // app의 어디에서든 config module에 접근 가능한지 여부
+      envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
+      ignoreEnvFile: process.env.NODE_ENV === 'prod', // 서버에 deploy할때 .env파일(environment variable파일)을 사용하지 않겠다는 것
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string().valid('dev', 'prod', 'test').required(), // NODE_ENV에 test를 넣어주는 곳이 어디지?
+        DB_HOST: Joi.string().required(), // Joi.object의 key를 .env파일로 지정하고 validation조건을 입력하면 .env와 비교해서 결과를 알려주는 것 같다.
+        DB_PORT: Joi.string().required(),
+        DB_USERNAME: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
+        DB_NAME: Joi.string().required(),
+        // PRIVATE_KEY: Joi.string().required(),
+        // MAILGUN_API_KEY: Joi.string().required(),
+        // MAILGUN_DOMAIN_NAME: Joi.string().required(),
+        // MAILGUN_FROM_EMAIL: Joi.string().required(),
+      }),
+    }),
     TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'db.sqlite3',
-      synchronize: true,
-      logging: process.env.NODE_ENV !== 'test',
+      // type: 'sqlite',
+      // database: 'db.sqlite3',
+      // synchronize: true,
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      synchronize: process.env.NODE_ENV !== 'prod',
+      logging:
+        process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
       entities: [Podcast, Episode, User, Review],
     }),
     GraphQLModule.forRoot({
