@@ -22,6 +22,15 @@ export class Podcast extends CoreEntity {
   @Column()
   @Field(type => String)
   @IsString()
+  description: string;
+
+  @Column({ nullable: true })
+  @IsString()
+  epiUpdatedAt?: string;
+
+  @Column()
+  @Field(type => String)
+  @IsString()
   category: string;
 
   @Column({ default: 0 })
