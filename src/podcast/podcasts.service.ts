@@ -50,10 +50,10 @@ export class PodcastsService {
 
   async getAllPodcasts(): Promise<GetAllPodcastsOutput> {
     try {
-      const podcasts = await this.podcastRepository.find();
+      // const podcasts = await this.podcastRepository.find();
       // {relations:['episode'], take:1}
-      console.log('pass');
-      const getPodcastsTest = await this.podcastRepository
+      // console.log('pass');
+      const getPodcasts = await this.podcastRepository
         .createQueryBuilder('podcast')
         .leftJoinAndSelect(
           'podcast.episodes',
@@ -62,11 +62,11 @@ export class PodcastsService {
         )
         .orderBy('episodes', 'DESC')
         .getMany();
-      console.log('getPodcastsTest', getPodcastsTest);
+      // console.log('getPodcastsTest', getPodcastsTest);
 
       return {
         ok: true,
-        podcasts: getPodcastsTest,
+        podcasts: getPodcasts,
       };
     } catch (e) {
       console.log(e);
