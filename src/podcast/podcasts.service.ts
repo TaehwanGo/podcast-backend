@@ -60,7 +60,7 @@ export class PodcastsService {
           'episodes',
           // 'episodes.createdAt = podcast.epiUpdatedAt', // id저장하는 것으로 바꾸고 episode 삭제 조건에서 해당 에피소드가 최신인지 확인
         )
-        .orderBy('episodes', 'DESC')
+        .orderBy('episodes.created', 'DESC')
         .getMany();
       // console.log('getPodcastsTest', getPodcastsTest);
 
