@@ -60,7 +60,7 @@ export class PodcastsService {
           'episodes',
           // 'episodes.createdAt = podcast.epiUpdatedAt', // id저장하는 것으로 바꾸고 episode 삭제 조건에서 해당 에피소드가 최신인지 확인
         )
-        .orderBy('episodes.created', 'DESC')
+        .orderBy({ podcast: 'DESC', episodes: 'DESC' })
         .getMany();
       // console.log('getPodcastsTest', getPodcastsTest);
 
@@ -95,8 +95,16 @@ export class PodcastsService {
     try {
       const podcast = await this.podcastRepository.findOne(
         { id },
-        { relations: ['episodes', 'creator', 'reviews'] },
+        {
+          relations: ['episodes', 'creator', 'reviews'],
+        },
       );
+      // const podcast = await this.podcastRepository
+      //   .createQueryBuilder('podcast')
+      //   .where('id IN (:id)', { id })
+      //   .leftJoinAndSelect('podcast.episodes', 'episodes')
+      //   .orderBy('episodes', 'DESC')
+      //   .getOne();
       if (!podcast) {
         return {
           ok: false,
@@ -108,6 +116,7 @@ export class PodcastsService {
         podcast,
       };
     } catch (e) {
+      console.log(e);
       return this.InternalServerErrorOutput;
     }
   }

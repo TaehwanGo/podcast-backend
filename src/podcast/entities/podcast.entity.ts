@@ -52,7 +52,10 @@ export class Podcast extends CoreEntity {
   @RelationId((podcast: Podcast) => podcast.creator)
   creatorId: number;
 
-  @OneToMany(() => Episode, episode => episode.podcast, { nullable: true })
+  @OneToMany(() => Episode, episode => episode.podcast, {
+    nullable: true,
+    eager: true,
+  })
   @Field(type => [Episode], { nullable: true })
   episodes?: Episode[];
 
