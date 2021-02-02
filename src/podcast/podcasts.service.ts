@@ -21,7 +21,7 @@ import {
   GetEpisodeOutput,
 } from './dtos/podcast.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Raw, Like } from 'typeorm';
+import { Repository, Raw, Like, getRepository } from 'typeorm';
 import {
   SearchPodcastsInput,
   SearchPodcastsOutput,
@@ -51,21 +51,35 @@ export class PodcastsService {
   async getAllPodcasts(): Promise<GetAllPodcastsOutput> {
     try {
       const podcasts = await this.podcastRepository.find();
+      // {relations:['episode'], take:1}
+      console.log('pass');
+      const getPodcastsTest = await this.podcastRepository
+        .createQueryBuilder('podcast')
+        .leftJoinAndSelect(
+          'podcast.episodes',
+          'episodes',
+          // 'episodes.createdAt = podcast.epiUpdatedAt', // id저장하는 것으로 바꾸고 episode 삭제 조건에서 해당 에피소드가 최신인지 확인
+        )
+        .orderBy('episodes', 'DESC')
+        .getMany();
+      console.log('getPodcastsTest', getPodcastsTest);
+
       return {
         ok: true,
-        podcasts,
+        podcasts: getPodcastsTest,
       };
     } catch (e) {
+      console.log(e);
       return this.InternalServerErrorOutput;
     }
   }
 
   async createPodcast(
     creator: User,
-    { title, category }: CreatePodcastInput,
+    createPodcastInput: CreatePodcastInput,
   ): Promise<CreatePodcastOutput> {
     try {
-      const newPodcast = this.podcastRepository.create({ title, category });
+      const newPodcast = this.podcastRepository.create(createPodcastInput);
       newPodcast.creator = creator;
       const { id } = await this.podcastRepository.save(newPodcast);
       return {
@@ -189,7 +203,7 @@ export class PodcastsService {
     if (!ok) {
       return { ok, error };
     }
-    const episode = episodes.find((episode) => episode.id === episodeId);
+    const episode = episodes.find(episode => episode.id === episodeId);
     if (!episode) {
       return {
         ok: false,
@@ -204,17 +218,19 @@ export class PodcastsService {
 
   async createEpisode(
     user: User,
-    { podcastId, title, category }: CreateEpisodeInput,
+    createEpisodeInput: CreateEpisodeInput,
   ): Promise<CreateEpisodeOutput> {
     try {
-      const { podcast, ok, error } = await this.getPodcast(podcastId);
+      const { podcast, ok, error } = await this.getPodcast(
+        createEpisodeInput.podcastId,
+      );
       if (!ok) {
         return { ok, error };
       }
       if (podcast.creator.id !== user.id) {
         return { ok: false, error: 'Not authorized' };
       }
-      const newEpisode = this.episodeRepository.create({ title, category });
+      const newEpisode = this.episodeRepository.create(createEpisodeInput); // {title, category}
       newEpisode.podcast = podcast;
       const { id } = await this.episodeRepository.save(newEpisode);
       return {

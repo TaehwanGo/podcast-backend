@@ -1,6 +1,6 @@
 import { Episode } from './episode.entity';
-import { ObjectType, Field } from '@nestjs/graphql';
-import { IsString, Min, Max, IsNumber } from 'class-validator';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { IsString, Min, Max, IsNumber, IsOptional } from 'class-validator';
 import { Column, Entity, OneToMany, ManyToOne, RelationId } from 'typeorm';
 import { CoreEntity } from './core.entity';
 import { Review } from './review.entity';
@@ -14,19 +14,22 @@ export class Podcast extends CoreEntity {
   @IsString()
   title: string;
 
-  @Column()
-  @Field(type => String)
+  @Column({
+    default:
+      'https://www.iclr.co.uk/wp-content/uploads/media//2019/08/Podcast-825x420.jpg',
+  })
+  @Field(type => String, {
+    defaultValue:
+      'https://www.iclr.co.uk/wp-content/uploads/media//2019/08/Podcast-825x420.jpg',
+  })
   @IsString()
-  thumbnailImg: string;
+  @IsOptional()
+  thumbnailImg?: string;
 
   @Column()
   @Field(type => String)
   @IsString()
   description: string;
-
-  @Column({ nullable: true })
-  @IsString()
-  epiUpdatedAt?: string;
 
   @Column()
   @Field(type => String)
@@ -49,9 +52,9 @@ export class Podcast extends CoreEntity {
   @RelationId((podcast: Podcast) => podcast.creator)
   creatorId: number;
 
-  @OneToMany(() => Episode, episode => episode.podcast)
-  @Field(type => [Episode])
-  episodes: Episode[];
+  @OneToMany(() => Episode, episode => episode.podcast, { nullable: true })
+  @Field(type => [Episode], { nullable: true })
+  episodes?: Episode[];
 
   @OneToMany(() => Review, review => review.podcast)
   @Field(type => [Review])

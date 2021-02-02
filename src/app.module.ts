@@ -47,8 +47,8 @@ import * as Joi from 'joi';
             database: process.env.DB_NAME,
           }),
       synchronize: process.env.NODE_ENV !== 'prod',
-      logging:
-        process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
+      logging: false,
+      //process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
       entities: [Podcast, Episode, User, Review],
     }),
     GraphQLModule.forRoot({
