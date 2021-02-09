@@ -12,6 +12,7 @@ import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
 import * as Joi from 'joi';
+import { Category } from './podcast/entities/category.entity';
 
 @Module({
   imports: [
@@ -49,7 +50,7 @@ import * as Joi from 'joi';
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: false,
       //process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
-      entities: [Podcast, Episode, User, Review],
+      entities: [Podcast, Episode, User, Review, Category],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,

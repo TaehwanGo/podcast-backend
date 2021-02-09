@@ -7,7 +7,10 @@ export class CreatePodcastInput extends PickType(
   Podcast,
   ['title', 'category', 'thumbnailImg', 'description'],
   InputType,
-) {}
+) {
+  @Field(type => String)
+  categoryName: string;
+}
 
 @ObjectType()
 export class CreatePodcastOutput extends CoreOutput {

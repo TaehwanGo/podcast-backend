@@ -31,6 +31,7 @@ import {
   CreateReviewOutput,
 } from './dtos/create-review.dto';
 import { User } from 'src/users/entities/user.entity';
+import { CategoryRepository } from './repositories/category.repository';
 
 @Injectable()
 export class PodcastsService {
@@ -41,6 +42,8 @@ export class PodcastsService {
     private readonly episodeRepository: Repository<Episode>,
     @InjectRepository(Review)
     private readonly reviewRepository: Repository<Review>,
+    // @InjectRepository(Category)
+    private readonly categoryRepository: CategoryRepository,
   ) {}
 
   private readonly InternalServerErrorOutput = {
@@ -60,6 +63,7 @@ export class PodcastsService {
           'episodes',
           // 'episodes.createdAt = podcast.epiUpdatedAt', // id저장하는 것으로 바꾸고 episode 삭제 조건에서 해당 에피소드가 최신인지 확인
         )
+        .leftJoin('podcast.category', 'category')
         .orderBy({ podcast: 'DESC', episodes: 'DESC' })
         .getMany();
       // console.log('getPodcastsTest', getPodcastsTest);
@@ -80,7 +84,14 @@ export class PodcastsService {
   ): Promise<CreatePodcastOutput> {
     try {
       const newPodcast = this.podcastRepository.create(createPodcastInput);
-      newPodcast.creator = creator;
+      newPodcast.creator = creator; // dto에서 creator는 graphql에서 받아오지 않기 때문에 여기서 완성시켜 줘야함
+
+      const category = await this.categoryRepository.getOrCreate(
+        createPodcastInput.categoryName,
+      );
+
+      newPodcast.category = category;
+
       const { id } = await this.podcastRepository.save(newPodcast);
       return {
         ok: true,
@@ -96,7 +107,7 @@ export class PodcastsService {
       const podcast = await this.podcastRepository.findOne(
         { id },
         {
-          relations: ['episodes', 'creator', 'reviews'],
+          relations: ['episodes', 'creator', 'reviews', 'category'],
         },
       );
       // const podcast = await this.podcastRepository
