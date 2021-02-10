@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PodcastsService } from './podcasts.service';
 import {
+  CategoryResolver,
   EpisodeResolver,
   PodcastsResolver,
   ReviewResolver,
@@ -20,6 +21,7 @@ import { CategoryRepository } from './repositories/category.repository';
     PodcastsResolver,
     EpisodeResolver,
     ReviewResolver,
+    CategoryResolver,
   ],
 })
 export class PodcastsModule {}

@@ -32,6 +32,8 @@ import {
 } from './dtos/create-review.dto';
 import { User } from 'src/users/entities/user.entity';
 import { CategoryRepository } from './repositories/category.repository';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
+import { CategoryInput, CategoryOutput } from './dtos/category.dto';
 
 @Injectable()
 export class PodcastsService {
@@ -325,6 +327,43 @@ export class PodcastsService {
       return { ok: true, id };
     } catch {
       return this.InternalServerErrorOutput;
+    }
+  }
+
+  async allCategories(): Promise<AllCategoriesOutput> {
+    try {
+      const categories = await this.categoryRepository.find();
+      return {
+        ok: true,
+        categories,
+      };
+    } catch (err) {
+      return {
+        ok: false,
+        error: 'could not load categories',
+      };
+    }
+  }
+
+  async findCategoryBySlug({ slug }: CategoryInput): Promise<CategoryOutput> {
+    try {
+      const category = await this.categoryRepository.findOne({ slug });
+      if (!category) {
+        return {
+          ok: false,
+          error: 'Category not found',
+        };
+      }
+      return {
+        ok: true,
+        category,
+      };
+    } catch (err) {
+      console.log(err);
+      return {
+        ok: false,
+        error: 'Could not load category',
+      };
     }
   }
 }
